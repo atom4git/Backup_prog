@@ -5,15 +5,20 @@
 import datetime, os, shutil, zipfile  # mport modules
 import path_list
 
-#path_backup = "d:\\programm\\python\\projects\\automatic\\backup\\1"
-#path_file = "d:\\programm\\python\\projects\\automatic\\backup"
-path_file = path_list.path_file # file with path to backup
+path_file = path_list.path_file  # path to backup
+arch_obj = path_list.arch_obj  # folder or file to backup
+debug = path_list.debug  # debug level
 
 
 def notest_file(text):
     """Create and write logs in file"""
-    with open("info_file.txt", "a", encoding="utf-8", ) as f:
-        f.write(text)
+    if debug == 2:
+        print(text)
+        with open("info_file.txt", "a", encoding="utf-8", ) as f:
+            f.write(text + "\n")
+    elif debug == 1:
+        with open("info_file.txt", "a", encoding="utf-8", ) as f:
+            f.write(text + "\n")
 
 
 def get_date(format_of_date):
@@ -22,27 +27,47 @@ def get_date(format_of_date):
     return current_date
 
 
-notest_file("start: " + get_date("%d%m%Y_%H:%S") + "\n")
-print("start: " + get_date("%d%m%Y_%H:%S"))
+def zip_file(arch_obj):
+    """create zip file end incert information in it"""
+    with zipfile.ZipFile(get_date("%d%m%Y") + '.zip', 'w') as myzip:
+        myzip.write(arch_obj)
+    pass
+
+
+def test_path():
+    """
+    verify file or directory availability. If file or directory does not exist:
+    :return: close program
+    """
+    testpath = path_file + arch_obj
+    notest_file(testpath)
+
+    if os.path.exists(testpath):
+        if os.path.isfile(testpath):
+            notest_file('ФАЙЛ')
+            notest_file('Размер:' + str(os.path.getsize(testpath) // 1024) + 'Кб')
+            notest_file('Дата создания:' + str(datetime.datetime.fromtimestamp(int(os.path.getctime(testpath)))))
+            notest_file(
+                'Дата последнего открытия:' + str(datetime.datetime.fromtimestamp(int(os.path.getatime(testpath)))))
+            notest_file(
+                'Дата последнего изменения:' + str(datetime.datetime.fromtimestamp(int(os.path.getmtime(testpath)))))
+        elif os.path.isdir(testpath):
+            notest_file('КАТАЛОГ')
+            notest_file('Список объектов в нем: ', os.listdir(testpath))
+    else:
+        notest_file("object not found")
+        os.abort()
+
+
+notest_file("start: " + get_date("%d%m%Y_%H:%S"))
 current_pass = os.getcwd()
 
-try:
-    os.chdir(path_file)
-except:
-    print("не правильный путь файла")
-    notest_file("не правильный путь файла")
-
-exemple_zip = zipfile.ZipFile((get_date("%d%m%Y") + ".zip"), "w")
-exemple_zip.write("test.txt", compress_type=zipfile.ZIP_DEFLATED)
-
-# exemple_info = exemple_zip.getinfo("test.txt") # get info from file
-# print(exemple_info.compress_size) # out size information
-
-exemple_zip.close()
-
+test_path()
+os.chdir(path_file)
+zip_file(arch_obj)
 os.chdir(current_pass)
-notest_file("end: " + get_date("%d%m%Y") + "\n")
-print("end: " + get_date("%d%m%Y_%H:%S"))
+notest_file("end: " + get_date("%d%m%Y") + "\n" + "=" * 10 + "\n")
+
 
 # # os.makedirs("d:\\programm\\python\\projects\\automatic\\backup")
 # print(os.getcwd())
