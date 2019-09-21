@@ -117,4 +117,3 @@ path_to_backup = path_to_file + "\\backup\\"
 copy_to_ftp(path_to_backup)
 os.chdir(path_to_file)
 notest_file("end: " + get_date("%d%m%Y_%H:%S") + "\n" + "=" * 10 + "\n")  # action log
-
