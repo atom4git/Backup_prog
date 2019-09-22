@@ -35,24 +35,13 @@ def get_date(format_of_date):
 def zip_file(backup_objects):
     """create zip file end incert information in it"""
 
-    # 1. Файлы и каталоги, которые необходимо скопировать, собираются в список.
-    # source = backup_objects
-    # Заметьте, что для имён, содержащих пробелы, необходимо использовать
-    # двойные кавычки внутри строки.
-    # 2. Резервные копии должны храниться в основном каталоге резерва.
-    if not os.path.exists(path_for_backup):
-        os.makedirs(path_for_backup)
-    # target_dir = "d:\\programm\\python\\projects\\backup_prog\\backup\\backup"  # Подставьте тот путь, который вы будете использовать.
-    # 3. Файлы помещаются в zip-архив.
-    # 4. Именем для zip-архива служит текущая дата и время.
+    # Get name from date_time
     name_of_zip_file = (get_date("%d%m%Y_%H.%S") + '.zip')
-    # target = target_dir + os.sep + name_of_zip_file
-    # print(target)
-    # помещения файлов в zip-архив
-    z = zipfile.ZipFile(name_of_zip_file, 'a')  # Создание нового архива
+    # put files in zip archiv
+    z = zipfile.ZipFile(name_of_zip_file, 'a')  # create archive
     for i in backup_objects:
         if os.path.isdir(i):
-            for root, dirs, files in os.walk(i):  # Список всех файлов и папок в директории folder
+            for root, dirs, files in os.walk(i):  # get list of files in folder
                 for file in files:
                     z.write(os.path.join(root, file))  # Создание относительных путей и запись файлов в архив
         else:
@@ -60,11 +49,6 @@ def zip_file(backup_objects):
     z.close()
     if zipfile.is_zipfile(name_of_zip_file):
         notest_file("arckhiving is conplite!")
-    # Запускаем создание резервной копии
-    # if os.system(zip_command) == 0:
-    #     notest_file('Suchesful' + target)
-    # else:
-    #     notest_file('Somthing wrong with arhiving')
     return name_of_zip_file
 
 
@@ -96,6 +80,8 @@ def zip_file(backup_objects):
 
 
 def copy_to_ftp(path):
+    """copy oll files on user's FTP"""
+
     # login data
     os.chdir(home_dir)
     host = path_list.ip_server  # get server's IP from config file
@@ -106,11 +92,7 @@ def copy_to_ftp(path):
     notest_file(ftp.login(ftp_user, ftp_password))  # action log
     ftp.cwd('home/backup')
     notest_file(ftp.getwelcome())  # action log
-
-    # list_dir = os.listdir()
-    # print(ftp.nlst())
     os.chdir(path_for_backup)
-    # print(os.getcwd())
     list_dir = os.listdir()
 
     for i in list_dir:
@@ -119,20 +101,16 @@ def copy_to_ftp(path):
 
     ftp.quit()
 
-
+if not os.path.exists(path_for_backup):
+    os.makedirs(path_for_backup)
 # os.chdir(path_to_file)
 notest_file("start: " + get_date("%d%m%Y_%H:%S"))
 
-# test_path()
-# os.chdir(path_to_file)
 
 name_of_zip_file = zip_file(backup_objects)
-# notest_file(name_of_zip_file)  # action log
-# path_to_backup = path_to_file + "\\backup\\"
-# copy_to_ftp(name_of_zip_file)
-# os.chdir(path_to_file)
 os.rename((os.getcwd() + "\\" + name_of_zip_file), (path_for_backup + "\\" + name_of_zip_file))
-# os.chdir(path_for_backup)
 copy_to_ftp(name_of_zip_file)
 os.chdir(home_dir)
 notest_file("end: " + get_date("%d%m%Y_%H:%S") + "\n" + "=" * 10 + "\n")  # action log
+
+
