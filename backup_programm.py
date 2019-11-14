@@ -2,7 +2,7 @@
 # Архивирует файлы и складывает их по дате
 # данные берет из path_file.py файла с данными
 
-import datetime, os, ftplib, zipfile  # import modules
+import datetime, os, ftplib, zipfile, hashlib  # import modules
 import path_list  # list with settings
 
 # import settings
@@ -11,8 +11,9 @@ arch_obj = path_list.arch_obj  # folder or file to backup
 debug = path_list.debug  # debug level
 backup_objects = path_list.path_to_backup
 path_for_backup = path_list.path_for_backup
+folder_on_server = path_list.folder_on_server
 
-home_dir = os.getcwd()  # get script home dir
+home_dir = os.getcwd()  # gets the script directory
 
 
 def notest_file(text):
@@ -38,7 +39,7 @@ def zip_file(backup_objects):
     # Get name from date_time
     name_of_zip_file = (get_date("%d%m%Y_%H.%S") + '.zip')
     # put files in zip archiv
-    z = zipfile.ZipFile(name_of_zip_file, 'a')  # create archive
+    z = zipfile.ZipFile(name_of_zip_file, 'a', zipfile.ZIP_DEFLATED)  # create archive
     for i in backup_objects:
         if os.path.isdir(i):
             for root, dirs, files in os.walk(i):  # get list of files in folder
@@ -48,7 +49,7 @@ def zip_file(backup_objects):
             z.write(i)
     z.close()
     if zipfile.is_zipfile(name_of_zip_file):
-        notest_file("arckhiving is conplite!")
+        notest_file("arckhiving is conplite! Created file" + name_of_zip_file)
     return name_of_zip_file
 
 
@@ -89,16 +90,18 @@ def copy_to_ftp(path):
     ftp_password = path_list.server_pass  # get user's Password from config file
 
     ftp = ftplib.FTP(host)
-    notest_file(ftp.login(ftp_user, ftp_password))  # action log
-    ftp.cwd('home/backup')
+    notest_file(ftp.login(ftp_user, ftp_password))  # action log ,"5000"
+    # ftp.set_pasv(True)
+    # ftp.pwd()
+    ftp.cwd(folder_on_server)
     notest_file(ftp.getwelcome())  # action log
     os.chdir(path_for_backup)
     list_dir = os.listdir()
 
+
     for i in list_dir:
         # print(i)
         ftp.storbinary("STOR " + i, open(i, "rb"), 1024)
-
     ftp.quit()
 
 if not os.path.exists(path_for_backup):
@@ -110,7 +113,8 @@ notest_file("start: " + get_date("%d%m%Y_%H:%S"))
 name_of_zip_file = zip_file(backup_objects)
 os.rename((os.getcwd() + "\\" + name_of_zip_file), (path_for_backup + "\\" + name_of_zip_file))
 copy_to_ftp(name_of_zip_file)
+os.remove(name_of_zip_file)
 os.chdir(home_dir)
 notest_file("end: " + get_date("%d%m%Y_%H:%S") + "\n" + "=" * 10 + "\n")  # action log
 
-
+# ToDo e-mail notifications

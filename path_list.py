@@ -9,6 +9,7 @@ path_for_backup = "d:\\programm\\python\\projects\\backup_prog\\backup\\backup\\
 
 arch_obj = "folder"
 debug = 2
-ip_server = "192.168.2.55"
-server_log = "atomic"
-server_pass = "8868755"
+ip_server = ""
+server_log = ""
+server_pass = ""
+folder_on_server = ''
