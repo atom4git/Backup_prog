@@ -117,4 +117,3 @@ os.remove(name_of_zip_file)
 os.chdir(home_dir)
 notest_file("end: " + get_date("%d%m%Y_%H:%S") + "\n" + "=" * 10 + "\n")  # action log
 
-# ToDo e-mail notifications
